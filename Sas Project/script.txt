@@ -1,0 +1,78 @@
+---------------------1-------------------------
+
+data newdataset;
+	set midterm;
+	weightLost = pre_weight-weight6weeks;
+
+	if weightLost > 5 then wLostCat = 'effective';
+	else if weightLost <= 5 then wLostCat = 'noeffective';
+run;
+
+---------------------2------------------------------
+
+data newdatset1;
+	set newdataset;
+	drop Person;
+run;
+
+proc means data=newdatset1;
+	var gender Age Height pre_weight Diet weight6weeks weightLost;
+run;
+
+proc freq data=newdatset1;
+	table wLostCat;
+run;
+
+--------------------3--------------------------------------------
+
+proc freq data=newdatset1;
+	table wLostCat*Diet/chisq;
+run;
+
+-----------------------4---------------------------------------
+
+proc freq data=newdatset1;
+	table wLostCat*gender/chisq;
+run;
+
+---------------------------5-------------------------------------
+
+proc ttest data=newdatset1 h0=0 alpha=0.05;
+	var weightLost;
+	where Diet = 2;
+run;
+
+-------------------------6-----------------------------------------
+
+proc ttest data=newdatset1 h0=0 sides=2 alpha=0.005;
+	class Diet;
+	var weightLost;
+	where Diet in (2,3);
+run;
+
+-------------------------------7---------------------------------------
+
+ANOVA table
+proc glm data=newdatset1;
+	class Diet;
+	model weightLost=Diet;
+run;
+
+proc glm data=newdatset1;
+	class Diet;
+	model weightLost=Diet;
+	lsmeans Diet/ adjust=tukey;
+run;
+
+------------------------------8-------------------------------------------
+
+proc glm data=newdatset1;
+	class Diet gender;
+	model weightLost=Diet gender Diet*gender;
+run;
+
+proc glm data=newdatset1;
+	class Diet gender;
+	model weightLost=Diet gender;
+	lsmeans Diet gender/adjust=tukey;
+run;
